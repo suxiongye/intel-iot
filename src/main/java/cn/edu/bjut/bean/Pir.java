@@ -7,8 +7,6 @@ import java.sql.Timestamp;
  */
 public class Pir {
 
-    public static String TOILET = "卫生间";
-
     private int id;
 
     private String value;

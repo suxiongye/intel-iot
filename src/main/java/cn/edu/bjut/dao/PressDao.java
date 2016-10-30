@@ -1,6 +1,5 @@
 package cn.edu.bjut.dao;
 
-import cn.edu.bjut.bean.Flame;
 import cn.edu.bjut.bean.Press;
 import cn.edu.bjut.util.DataBaseUtil;
 
@@ -14,51 +13,49 @@ import java.sql.SQLException;
  */
 public class PressDao {
 
+	public static int savePress(Press press) {
 
+		Connection connection = DataBaseUtil.getConnection();
 
-    public static int savePress(Press press) {
+		String sql = "insert into iot_press (value, createTime) values(?,?)";
 
-        Connection connection = DataBaseUtil.getConnection();
+		try {
+			PreparedStatement ps = connection.prepareStatement(sql);
+			ps.setString(1, press.getValue());
+			ps.setTimestamp(2, press.getCreateTime());
+			return ps.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return 0;
+	}
 
-        String sql = "insert into iot_press (value, createTime) values(?,?)";
+	public static Press selectLastPressRow() {
 
-        try {
-            PreparedStatement ps = connection.prepareStatement(sql);
-            ps.setString(1, press.getValue());
-            ps.setTimestamp(2, press.getCreateTime());
-            return ps.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return 0;
-    }
-    public static Press slectLastPressRow() {
+		Connection connection = DataBaseUtil.getConnection();
 
-        Connection connection = DataBaseUtil.getConnection();
+		String sql = "select  *  from iot_press where createTime = (select max(createTime) from iot_press)";
 
-        String sql = "select  *  from iot_press where createTime = (select max(createTime) from iot_press)";
+		try {
+			PreparedStatement ps = connection.prepareStatement(sql);
 
-        try {
-            PreparedStatement ps = connection.prepareStatement(sql);
+			ResultSet results = ps.executeQuery();
 
-            ResultSet results = ps.executeQuery();
+			while (results.next()) {
+				Press press = new Press();
 
-            while (results.next()) {
-                Press press = new Press();
+				press.setId(results.getInt("id"));
+				press.setValue(results.getString("value"));
+				press.setCreateTime(results.getTimestamp("createTime"));
 
-                press.setId(results.getInt("id"));
-                press.setValue(results.getString("value"));
-                press.setCreateTime(results.getTimestamp("createTime"));
+				return press;
+			}
 
-                return press;
-            }
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return null;
-    }
-
+		return null;
+	}
 
 }

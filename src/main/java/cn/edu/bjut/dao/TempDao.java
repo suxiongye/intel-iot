@@ -30,7 +30,7 @@ public class TempDao {
         return 0;
     }
 
-    public static Temp slectLastTempRow() {
+    public static Temp selectLastTempRow() {
 
         Connection connection = DataBaseUtil.getConnection();
 

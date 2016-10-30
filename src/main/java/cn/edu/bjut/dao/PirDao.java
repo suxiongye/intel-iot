@@ -1,7 +1,6 @@
 package cn.edu.bjut.dao;
 
 import cn.edu.bjut.bean.Pir;
-import cn.edu.bjut.bean.Press;
 import cn.edu.bjut.util.DataBaseUtil;
 
 import java.sql.Connection;
@@ -14,49 +13,49 @@ import java.sql.SQLException;
  */
 public class PirDao {
 
-    public static int savePir(Pir pir) {
+	public static int savePir(Pir pir) {
 
-        Connection connection = DataBaseUtil.getConnection();
+		Connection connection = DataBaseUtil.getConnection();
 
-        String sql = "insert into iot_pir (value, createTime) values(?,?)";
+		String sql = "insert into iot_pir (value, createTime) values(?,?)";
 
-        try {
-            PreparedStatement ps = connection.prepareStatement(sql);
-            ps.setString(1, pir.getValue());
-            ps.setTimestamp(2, pir.getCreateTime());
-            return ps.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return 0;
-    }
+		try {
+			PreparedStatement ps = connection.prepareStatement(sql);
+			ps.setString(1, pir.getValue());
+			ps.setTimestamp(2, pir.getCreateTime());
+			return ps.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return 0;
+	}
 
-    public static Pir slectLastPirRow() {
+	public static Pir selectLastPirRow() {
 
-        Connection connection = DataBaseUtil.getConnection();
+		Connection connection = DataBaseUtil.getConnection();
 
-        String sql = "select  *  from iot_pir where createTime = (select max(createTime) from iot_pir)";
+		String sql = "select  *  from iot_pir where createTime = (select max(createTime) from iot_pir)";
 
-        try {
-            PreparedStatement ps = connection.prepareStatement(sql);
+		try {
+			PreparedStatement ps = connection.prepareStatement(sql);
 
-            ResultSet results = ps.executeQuery();
+			ResultSet results = ps.executeQuery();
 
-            while (results.next()) {
-                Pir pir = new Pir();
+			while (results.next()) {
+				Pir pir = new Pir();
 
-                pir.setId(results.getInt("id"));
-                pir.setValue(results.getString("value"));
-                pir.setCreateTime(results.getTimestamp("createTime"));
+				pir.setId(results.getInt("id"));
+				pir.setValue(results.getString("value"));
+				pir.setCreateTime(results.getTimestamp("createTime"));
 
-                return pir;
-            }
+				return pir;
+			}
 
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 
-        return null;
-    }
+		return null;
+	}
 
 }

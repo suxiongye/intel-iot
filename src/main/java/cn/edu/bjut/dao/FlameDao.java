@@ -1,7 +1,6 @@
 package cn.edu.bjut.dao;
 
 import cn.edu.bjut.bean.Flame;
-import cn.edu.bjut.bean.Temp;
 import cn.edu.bjut.util.DataBaseUtil;
 
 import java.sql.*;
@@ -11,53 +10,52 @@ import java.sql.*;
  */
 public class FlameDao {
 
+	public static int saveFlame(Flame flame) {
 
-    public static int saveFlame(Flame flame) {
+		Connection connection = DataBaseUtil.getConnection();
 
-        Connection connection = DataBaseUtil.getConnection();
+		String sql = "insert into iot_flame (value, createTime) values(?,?)";
 
-        String sql = "insert into iot_flame (value, createTime) values(?,?)";
+		try {
 
-        try {
+			PreparedStatement ps = connection.prepareStatement(sql);
+			ps.setString(1, flame.getValue());
+			ps.setTimestamp(2, flame.getCreateTime());
 
-            PreparedStatement ps = connection.prepareStatement(sql);
-            ps.setString(1, flame.getValue());
-            ps.setTimestamp(2, flame.getCreateTime());
+			return ps.executeUpdate();
 
-            return ps.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return 0;
+	}
 
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return 0;
-    }
+	public static Flame selectLastFlameRow() {
 
-    public static Flame slectLastFlameRow() {
+		Connection connection = DataBaseUtil.getConnection();
 
-        Connection connection = DataBaseUtil.getConnection();
+		String sql = "select  *  from iot_flame where createTime = (select max(createTime) from iot_flame)";
 
-        String sql = "select  *  from iot_flame where createTime = (select max(createTime) from iot_flame)";
+		try {
+			PreparedStatement ps = connection.prepareStatement(sql);
 
-        try {
-            PreparedStatement ps = connection.prepareStatement(sql);
+			ResultSet results = ps.executeQuery();
 
-            ResultSet results = ps.executeQuery();
+			while (results.next()) {
+				Flame flame = new Flame();
 
-            while (results.next()) {
-                Flame flame = new Flame();
+				flame.setId(results.getInt("id"));
+				flame.setValue(results.getString("value"));
+				flame.setCreateTime(results.getTimestamp("createTime"));
 
-                flame.setId(results.getInt("id"));
-                flame.setValue(results.getString("value"));
-                flame.setCreateTime(results.getTimestamp("createTime"));
+				return flame;
+			}
 
-                return flame;
-            }
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return null;
-    }
+		return null;
+	}
 
 }

@@ -14,55 +14,81 @@ import java.sql.SQLException;
  */
 public class PhoneDao {
 
+	public static Phone selectLastPhoneRow() {
 
-    public static Phone slectLastPhoneRow() {
+		Connection connection = DataBaseUtil.getConnection();
 
-        Connection connection = DataBaseUtil.getConnection();
+		String sql = "select  *  from iot_phone where id = (select max(id) from iot_phone)";
 
-        String sql = "select  *  from iot_phone where id = (select max(id) from iot_phone)";
+		try {
+			PreparedStatement ps = connection.prepareStatement(sql);
 
-        try {
-            PreparedStatement ps = connection.prepareStatement(sql);
+			ResultSet results = ps.executeQuery();
 
-            ResultSet results = ps.executeQuery();
+			while (results.next()) {
+				Phone phone = new Phone();
+				phone.setId(results.getInt("id"));
+				phone.setPhone(results.getString("phone"));
+				phone.setName(results.getString("name"));
+				return phone;
+			}
 
-            while (results.next()) {
-                Phone phone = new Phone();
-                phone.setId(results.getInt("id"));
-                phone.setPhone(results.getString("phone"));
-                phone.setName(results.getString("name"));
-                return phone;
-            }
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+		return null;
+	}
 
-        return null;
-    }
+	/**
+	 * 
+	 * @param name
+	 * @return
+	 */
+	public static Phone selectPhoneByName(String name) {
+		Connection connection = DataBaseUtil.getConnection();
+		String sql = "select  *  from iot_phone where name = ?";
+		try {
+			PreparedStatement ps = connection.prepareStatement(sql);
+			ps.setString(1, name);
+			ResultSet results = ps.executeQuery();
 
+			while (results.next()) {
+				Phone phone = new Phone();
+				phone.setId(results.getInt("id"));
+				phone.setPhone(results.getString("phone"));
+				phone.setName(results.getString("name"));
+				return phone;
+			}
 
-    public static boolean updatePhone(Phone phone) {
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 
-        Connection connection = DataBaseUtil.getConnection();
+	public static boolean updatePhone(Phone phone) {
 
-        String sql = "update iot_phone set name = ?, phone= ? where id = "+ phone.getId();
+		Connection connection = DataBaseUtil.getConnection();
 
-        try {
-            PreparedStatement ps = connection.prepareStatement(sql);
-            ps.setString(1, phone.getName());
-            ps.setString(2, phone.getPhone());
+		String sql = "update iot_phone set name = ?, phone= ? where id = "
+				+ phone.getId();
 
-            int result = ps.executeUpdate();
+		try {
+			PreparedStatement ps = connection.prepareStatement(sql);
+			ps.setString(1, phone.getName());
+			ps.setString(2, phone.getPhone());
 
-            if(result > 0)
-                return true;
+			int result = ps.executeUpdate();
 
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+			if (result > 0)
+				return true;
 
-        return false;
-    }
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		return false;
+	}
 
 }

@@ -2,11 +2,12 @@ package cn.edu.bjut.action;
 
 import cn.edu.bjut.bean.Flame;
 import cn.edu.bjut.bean.Phone;
-import cn.edu.bjut.bean.Temp;
 import cn.edu.bjut.dao.FlameDao;
 import cn.edu.bjut.dao.PhoneDao;
+import cn.edu.bjut.util.Config;
 import cn.edu.bjut.util.SMSUtil;
 import cn.edu.bjut.util.TimeUtil;
+
 import com.alibaba.fastjson.JSON;
 
 import javax.servlet.ServletException;
@@ -14,6 +15,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Timestamp;
@@ -26,28 +28,27 @@ import java.util.Map;
 @WebServlet(urlPatterns = "/flame")
 public class ReceiveFlameInfoController extends HttpServlet {
 
-	private static Timestamp lastFireTime = null;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 
-		Phone phone = PhoneDao.slectLastPhoneRow();
+		Phone phone = PhoneDao.selectLastPhoneRow();
 
 		String tempString = req.getParameter("flame");
 		int value = Integer.parseInt(tempString);
 		Flame flame = new Flame(value);
-
 		flame.setCreateTime(new Timestamp(System.currentTimeMillis()));
-		System.out.println(tempString);
 		int result = FlameDao.saveFlame(flame);
 
 		// 若着火
 		if (value > 200) {
-			// 确定最近着火提示时间
-
-			// 第一次提示
-			if (lastFireTime == null) {
+			// 发送短信
+			if (Config.LAST_FLAME == 0 ) {
 				System.out.println("fire");
 				lastFireTime = flame.getCreateTime();
 				// 发送短信

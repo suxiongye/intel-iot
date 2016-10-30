@@ -7,10 +7,6 @@ import java.sql.Timestamp;
  */
 public class Press {
 
-    public static String BED_ROOM = "卧室";
-
-    public static String HAND = "手边";
-
     private int id;
 
     private String value;

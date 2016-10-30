@@ -2,8 +2,6 @@ package cn.edu.bjut.action;
 
 import cn.edu.bjut.bean.Phone;
 import cn.edu.bjut.dao.PhoneDao;
-import com.alibaba.fastjson.JSON;
-
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -18,29 +16,34 @@ import java.io.PrintWriter;
 @WebServlet(urlPatterns = "/setting")
 public class SettingController extends HttpServlet {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	@Override
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
 
-        String phone = req.getParameter("phone");
-        String name = req.getParameter("name");
+		String name = req.getParameter("name");
 
+		Phone phone = PhoneDao.selectPhoneByName(name);
+		boolean result = false;
+		// 若存在则更新号码，不存在则不管
+		if (phone != null) {
+			phone.setPhone(req.getParameter("phone"));
+			result = PhoneDao.updatePhone(phone);
+		}
 
-        Phone lastPhone = PhoneDao.slectLastPhoneRow();
+		resp.setContentType("application/json; charset=utf-8");
+		PrintWriter out = resp.getWriter();
+		out.write("Update: " + result);
+	}
 
-        lastPhone.setName(name);
-        lastPhone.setPhone(phone);
+	@Override
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
 
-        boolean result = PhoneDao.updatePhone(lastPhone);
-
-        resp.setContentType("application/json; charset=utf-8");
-        PrintWriter out = resp.getWriter();
-        out.write(result+"");
-    }
-
-    @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-
-        this.doGet(req,resp);
-    }
+		this.doGet(req, resp);
+	}
 }
