@@ -1,10 +1,8 @@
 package cn.edu.bjut.action;
 
 import cn.edu.bjut.bean.Phone;
-import cn.edu.bjut.bean.Pir;
 import cn.edu.bjut.bean.Press;
 import cn.edu.bjut.dao.PhoneDao;
-import cn.edu.bjut.dao.PirDao;
 import cn.edu.bjut.dao.PressDao;
 import cn.edu.bjut.util.Config;
 import cn.edu.bjut.util.SMSUtil;
@@ -44,12 +42,14 @@ public class RecevePressInfoController extends HttpServlet {
 		String str = req.getParameter("press");
 
 		Press press = new Press();
-		int position = Integer.parseInt(str);
-		Map<String, String> sms = new HashMap<String, String>();
-		sms.put("name", phone.getName());
+		long now = System.currentTimeMillis();
+		press.setCreateTime(new Timestamp(now));
 
-		// 判断按钮类型
-		// 卧室
+		// 根据类型设置短信
+		Map<String, String> sms = new HashMap<String, String>();
+
+		int position = Integer.parseInt(str);
+
 		if (position == 0) {
 			press.setValue(Config.PRESS_BEDROOM);
 			sms.put("button", "卧室触摸按钮");
@@ -57,54 +57,34 @@ public class RecevePressInfoController extends HttpServlet {
 		} else if (position == 1) {
 			press.setValue(Config.PRESS_HAND);
 			sms.put("button", "手边按钮");
+			// 判断位置
+			if (TimeUtil.nearTime(Config.LAST_PIR, Config.MUST_TIME)) {
+				sms.put("position", "位置在卫生间，");
+			} else if (TimeUtil.nearTime(Config.LAST_PIR, Config.MAYBE_TIME)) {
+				sms.put("position", "位置较大可能在卫生间，");
+			} else {
+				sms.put("position", "位置未知，");
+			}
 		} else {
+			return;
 		}
-		// 若一分钟内发送过则不再发送
-		if (TimeUtil.nearTime(Config.LAST_PRESS, Config.SMS_INTERNEL)) {
-
-		}
-		SMSUtil.sendSms(phone.getPhone(), SMSUtil.template_press,
-				JSON.toJSONString(sms));
-		press.setCreateTime(new Timestamp(System.currentTimeMillis()));
-		Pir lastPir = PirDao.selectLastPirRow();
-		int mint = 10;
-		if (lastPir != null) {
-			long s = press.getCreateTime().getTime()
-					- lastPir.getCreateTime().getTime();
-
-			mint = TimeUtil.getMinute(s);
-		}
-		if (mint <= 1) {
-			Map<String, String> sms = new HashMap<String, String>();
-			sms.put("name", phone.getName());
-			sms.put("button", "手边按钮");
-			sms.put("position", "位置在卫生间，");
-			SMSUtil.sendSms(phone.getPhone(), SMSUtil.template_press,
-					JSON.toJSONString(sms));
-		} else if (mint > 1 && mint <= 5) {
-			Map<String, String> sms = new HashMap<String, String>();
-			sms.put("name", phone.getName());
-			sms.put("button", "手边按钮");
-			sms.put("position", "位置较大可能在卫生间，");
-			SMSUtil.sendSms(phone.getPhone(), SMSUtil.template_press,
-					JSON.toJSONString(sms));
-		} else {
-			Map<String, String> sms = new HashMap<String, String>();
-			sms.put("name", phone.getName());
-			sms.put("button", "手边按钮");
-			sms.put("position", "位置未知，");
-			SMSUtil.sendSms(phone.getPhone(), SMSUtil.template_press,
-					JSON.toJSONString(sms));
-		}
-
-		press.setCreateTime(new Timestamp(System.currentTimeMillis()));
-
 		int result = PressDao.savePress(press);
 
 		resp.setContentType("application/json; charset=utf-8");
 		PrintWriter out = resp.getWriter();
 		out.write(result + "");
 
+		if (phone == null) {
+			return;
+		}
+		sms.put("name", phone.getName());
+		// 若一分钟内发送过则不再发送
+		if (Config.LAST_PRESS == 0
+				|| !TimeUtil.nearTime(Config.LAST_PRESS, Config.SMS_INTERNEL)) {
+			Config.LAST_PRESS = now;
+			SMSUtil.sendSms(phone.getPhone(), SMSUtil.template_press,
+					JSON.toJSONString(sms));
+		}
 	}
 
 	@Override
@@ -114,5 +94,4 @@ public class RecevePressInfoController extends HttpServlet {
 		this.doGet(req, resp);
 	}
 
-	
 }

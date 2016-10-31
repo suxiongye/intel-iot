@@ -42,44 +42,32 @@ public class ReceiveFlameInfoController extends HttpServlet {
 		String tempString = req.getParameter("flame");
 		int value = Integer.parseInt(tempString);
 		Flame flame = new Flame(value);
-		flame.setCreateTime(new Timestamp(System.currentTimeMillis()));
+		long now = System.currentTimeMillis();
+		flame.setCreateTime(new Timestamp(now));
 		int result = FlameDao.saveFlame(flame);
-
+		resp.setContentType("application/json; charset=utf-8");
+		PrintWriter out = resp.getWriter();
+		out.write(result + "");
+		if (phone == null)
+			return;
 		// 若着火
 		if (value > 200) {
-			// 发送短信
-			if (Config.LAST_FLAME == 0 ) {
+			// 若第一次或者超过1分钟则发送短信
+			if (Config.LAST_FLAME == 0
+					|| !TimeUtil.nearTime(Config.LAST_FLAME,
+							Config.SMS_INTERNEL)) {
 				System.out.println("fire");
-				lastFireTime = flame.getCreateTime();
 				// 发送短信
 				Map<String, String> sms = new HashMap<String, String>();
 				sms.put("name", phone.getName());
 				sms.put("detail", "被触发");
 				SMSUtil.sendSms(phone.getPhone(), SMSUtil.template_fire,
 						JSON.toJSONString(sms));
-				System.out.println(phone.getPhone());
-			} else {
-				long times = flame.getCreateTime().getTime()
-						- lastFireTime.getTime();
-				System.out.println("times:"+times);
-				int min = TimeUtil.getMinte(times);
-				System.out.println("min:" + min);
-				// 若超过五分钟则提示，否则不重复发送
-				if (min > 1) {
-					// 发送短信
-					Map<String, String> sms = new HashMap<String, String>();
-					sms.put("name", phone.getName());
-					sms.put("detail", "被触发");
-					SMSUtil.sendSms(phone.getPhone(), SMSUtil.template_fire,
-							JSON.toJSONString(sms));
-					lastFireTime = flame.getCreateTime();
-				}
+				// 更新着火时间
+				Config.LAST_FLAME = now;
 			}
 		}
 
-		resp.setContentType("application/json; charset=utf-8");
-		PrintWriter out = resp.getWriter();
-		out.write(result + "");
 	}
 
 	@Override

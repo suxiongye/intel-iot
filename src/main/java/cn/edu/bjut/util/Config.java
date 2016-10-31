@@ -8,6 +8,10 @@ public class Config {
 	//短信间隔时间
 	public static int SMS_INTERNEL = 1;
 	
+	//位置判断时间
+	public static int MUST_TIME = 1;
+	public static int MAYBE_TIME = 5;
+	
 	//火灾级别
     public static String FLAME_NORMAL= "Normal";
 
