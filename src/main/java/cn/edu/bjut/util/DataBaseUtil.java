@@ -56,5 +56,16 @@ public class DataBaseUtil {
 		}
 
 	}
+	
+	//设置数据库
+	public static boolean configDatabase(String address, String port, String dbName, String user, String pwd){
+		DataBaseUtil.url = "jdbc:mysql://"+address+":"+port+"/"+dbName;
+		DataBaseUtil.user = user;
+		DataBaseUtil.passwd = pwd;
+		//重置数据库
+		conn = null;
+		if(getConnection()!=null) return true;
+		else return false;
+	}
 
 }

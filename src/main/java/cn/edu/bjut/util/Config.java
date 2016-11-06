@@ -1,6 +1,7 @@
 package cn.edu.bjut.util;
 
 public class Config {
+	
 	//最后一次提醒时间
 	public static long LAST_PIR = 0L;
 	public static long LAST_PRESS = 0L;
